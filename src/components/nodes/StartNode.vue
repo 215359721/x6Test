@@ -4,22 +4,24 @@
 
 <script setup lang="ts">
 import { ref, inject, onMounted } from 'vue'
-import type { Node } from '@antv/x6'
 
-const getNode = () => inject<Node>('getNode')
 const nodeData = ref<{ label?: string }>({})
 
 onMounted(() => {
+  // 通过 inject 获取 getNode 函数
+  const getNode: any = inject('getNode')
   const node = getNode?.()
+
   if (node) {
-    // 获取初始数据
-    const data = node.getData()
-    nodeData.value = data || {}
+    // 获取初始数据 - data 是直接属性
+    nodeData.value = node.data || {}
 
     // 监听数据变化
-    node.on('change:data', ({ current }) => {
-      nodeData.value = current
-    })
+    if (node.on) {
+      node.on('change:data', ({ current }: any) => {
+        nodeData.value = current
+      })
+    }
   }
 })
 </script>

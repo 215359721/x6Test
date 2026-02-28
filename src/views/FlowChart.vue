@@ -28,7 +28,7 @@ import type { Node } from '@antv/x6'
 import { ElMessage } from 'element-plus'
 import StartNode from '@/components/nodes/StartNode.vue'
 import EndNode from '@/components/nodes/EndNode.vue'
-import ProcessNode from '@/components/nodes/ProcessNode.vue'
+import OperationNode from '@/components/nodes/OperationNode.vue'
 
 // 获取 TeleportContainer 组件
 const TeleportContainer = getTeleport()
@@ -87,8 +87,8 @@ register({
 })
 
 register({
-  shape: 'process-node',
-  component: ProcessNode,
+  shape: 'operation-node',
+  component: OperationNode,
   width: 120,
   height: 50,
   ports: {
@@ -230,11 +230,11 @@ const createNodes = () => {
   // 计算起始位置，使节点在画布中心附近
   const startX = 50
   const startY = 150
-  const nodeSpacing = 150
+  const nodeSpacing = 200
 
   const nodeConfigs: Node.Metadata[] = nodes.map((node, index) => {
     // 根据节点类型确定使用的自定义形状
-    let shape = 'process-node'
+    let shape = 'operation-node'
     if (index === 0) {
       shape = 'start-node'
     } else if (index === nodes.length - 1) {
@@ -297,7 +297,7 @@ const layoutDiagram = () => {
   const padding = 60 // 左右各留60px边距
   const availableWidth = canvasWidth - padding * 2
   const totalNodesWidth = nodeWidth * nodeCount
-  const nodesep = Math.max(30, Math.floor((availableWidth - totalNodesWidth) / (nodeCount - 1)))
+  const nodesep = Math.max(30, Math.min(50, Math.floor((availableWidth - totalNodesWidth) / (nodeCount - 1))))
 
   // 准备布局数据
   const nodes_data = nodes_list.map(node => {
@@ -318,7 +318,7 @@ const layoutDiagram = () => {
     type: 'dagre',
     rankdir: 'LR',
     nodesep: nodesep,
-    ranksep: 80,
+    ranksep: 30,
     controlPoints: true
   })
 
