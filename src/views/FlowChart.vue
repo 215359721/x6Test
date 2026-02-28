@@ -2,7 +2,7 @@
   <div class="flowchart-container">
     <el-container>
       <el-header class="header">
-        <h1>AntV X6 流程图 Demo</h1>
+        <h1>AntV X6 流程图 Demo1</h1>
       </el-header>
       <el-main class="main">
         <div class="toolbar">
