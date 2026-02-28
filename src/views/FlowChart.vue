@@ -164,8 +164,8 @@ const createNodes = () => {
     },
     ports: {
       groups: {
-        top: {
-          position: 'top',
+        left: {
+          position: 'left',
           attrs: {
             circle: {
               magnet: true,
@@ -176,8 +176,8 @@ const createNodes = () => {
             }
           }
         },
-        bottom: {
-          position: 'bottom',
+        right: {
+          position: 'right',
           attrs: {
             circle: {
               magnet: true,
@@ -190,8 +190,8 @@ const createNodes = () => {
         }
       },
       items: [
-        { group: 'top' },
-        { group: 'bottom' }
+        { group: 'left' },
+        { group: 'right' }
       ]
     }
   }))
@@ -223,18 +223,66 @@ const createNodes = () => {
 const layoutDiagram = () => {
   if (!graph) return
 
+  // 获取画布尺寸
+  const canvasSize = graph.getGraphArea()
+  const canvasWidth = canvasSize.width || 800
+  const canvasHeight = canvasSize.height || 600
+
+  // 获取当前图的所有节点
+  const nodes_list = graph.getNodes()
+  const nodeCount = nodes_list.length
+
+  // 计算节点尺寸（假设所有节点尺寸相同）
+  const nodeSize = nodes_list[0]?.getSize() || { width: 120, height: 50 }
+  const nodeWidth = nodeSize.width
+  const nodeHeight = nodeSize.height
+
+  // 动态计算间距，确保节点能适应画布宽度
+  const padding = 60 // 左右各留60px边距
+  const availableWidth = canvasWidth - padding * 2
+  const totalNodesWidth = nodeWidth * nodeCount
+  const nodesep = Math.max(30, Math.floor((availableWidth - totalNodesWidth) / (nodeCount - 1)))
+
+  // 准备布局数据
+  const nodes_data = nodes_list.map(node => {
+    const size = node.getSize()
+    return {
+      id: node.id,
+      size: { width: size.width, height: size.height }
+    }
+  })
+
+  const edges_data = graph.getEdges().map(edge => ({
+    source: edge.getSourceCellId(),
+    target: edge.getTargetCellId()
+  }))
+
+  // 创建 Dagre 布局
   const dagreLayout = new DagreLayout({
     type: 'dagre',
     rankdir: 'LR',
-    align: 'UL',
-    nodesep: 50,
+    nodesep: nodesep,
     ranksep: 80,
     controlPoints: true
   })
 
-  const model = dagreLayout.layout(graph.toJSON())
-  graph.fromJSON(model)
-  graph.centerContent()
+  // 执行布局
+  const layoutModel = dagreLayout.layout({
+    nodes: nodes_data,
+    edges: edges_data
+  })
+
+  // 应用布局结果到节点
+  layoutModel.nodes?.forEach((nodeModel: any) => {
+    const node = graph?.getCellById(nodeModel.id) as Node | undefined
+    if (node && nodeModel.x !== undefined && nodeModel.y !== undefined) {
+      node.setPosition(nodeModel.x, nodeModel.y)
+    }
+  })
+
+  // 重置缩放并居中显示
+  graph.zoomTo(1)
+  graph.centerContent({ padding: 20 })
 }
 
 // 居中显示

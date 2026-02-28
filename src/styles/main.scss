@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // 全局样式重置
 * {
   margin: 0;
@@ -25,7 +27,7 @@ a {
   transition: color 0.3s;
 
   &:hover {
-    color: darken($primary-color, 10%);
+    color: color.scale($primary-color, $lightness: -10%);
   }
 }
 
