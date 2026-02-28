@@ -2,7 +2,7 @@
   <div class="flowchart-container">
     <el-container>
       <el-header class="header">
-        <h1>AntV X6 流程图 Demo1</h1>
+        <h1>AntV X6 流程图 Demo</h1>
       </el-header>
       <el-main class="main">
         <div class="toolbar">
@@ -15,6 +15,7 @@
         <div id="x6-container" ref="containerRef" class="x6-container"></div>
       </el-main>
     </el-container>
+    <TeleportContainer />
   </div>
 </template>
 
@@ -22,8 +23,107 @@
 import { onMounted, ref, onBeforeUnmount } from 'vue'
 import { Graph } from '@antv/x6'
 import { DagreLayout } from '@antv/layout'
+import { register, getTeleport } from '@antv/x6-vue-shape'
 import type { Node } from '@antv/x6'
 import { ElMessage } from 'element-plus'
+import StartNode from '@/components/nodes/StartNode.vue'
+import EndNode from '@/components/nodes/EndNode.vue'
+import ProcessNode from '@/components/nodes/ProcessNode.vue'
+
+// 获取 TeleportContainer 组件
+const TeleportContainer = getTeleport()
+
+// 注册自定义节点
+register({
+  shape: 'start-node',
+  component: StartNode,
+  width: 120,
+  height: 50,
+  ports: {
+    groups: {
+      right: {
+        position: 'right',
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: '#31d0c6',
+            r: 4,
+            strokeWidth: 2,
+            fill: '#fff'
+          }
+        }
+      }
+    },
+    items: [
+      { group: 'right' }
+    ]
+  }
+})
+
+register({
+  shape: 'end-node',
+  component: EndNode,
+  width: 120,
+  height: 50,
+  ports: {
+    groups: {
+      left: {
+        position: 'left',
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: '#31d0c6',
+            r: 4,
+            strokeWidth: 2,
+            fill: '#fff'
+          }
+        }
+      }
+    },
+    items: [
+      { group: 'left' }
+    ]
+  }
+})
+
+register({
+  shape: 'process-node',
+  component: ProcessNode,
+  width: 120,
+  height: 50,
+  ports: {
+    groups: {
+      left: {
+        position: 'left',
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: '#31d0c6',
+            r: 4,
+            strokeWidth: 2,
+            fill: '#fff'
+          }
+        }
+      },
+      right: {
+        position: 'right',
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: '#31d0c6',
+            r: 4,
+            strokeWidth: 2,
+            fill: '#fff'
+          }
+        }
+      }
+    },
+    items: [
+      { group: 'left' },
+      { group: 'right' }
+    ]
+  }
+})
 
 const containerRef = ref<HTMLDivElement>()
 let graph: Graph | null = null
@@ -132,69 +232,25 @@ const createNodes = () => {
   const startY = 150
   const nodeSpacing = 150
 
-  const nodeConfigs: Node.Metadata[] = nodes.map((node, index) => ({
-    id: node.id,
-    shape: 'rect',
-    x: startX + index * nodeSpacing,
-    y: startY,
-    width: 120,
-    height: 50,
-    label: node.label,
-    attrs: {
-      body: {
-        fill: index === 0 ? '#67c23a' : index === nodes.length - 1 ? '#f56c6c' : '#409eff',
-        stroke: '#fff',
-        strokeWidth: 2,
-        rx: 8,
-        ry: 8,
-        filter: {
-          name: 'dropShadow',
-          args: {
-            dx: 2,
-            dy: 2,
-            blur: 3
-          }
-        }
-      },
-      label: {
-        fill: '#fff',
-        fontSize: 14,
-        fontWeight: 500
-      }
-    },
-    ports: {
-      groups: {
-        left: {
-          position: 'left',
-          attrs: {
-            circle: {
-              magnet: true,
-              stroke: '#31d0c6',
-              r: 4,
-              strokeWidth: 2,
-              fill: '#fff'
-            }
-          }
-        },
-        right: {
-          position: 'right',
-          attrs: {
-            circle: {
-              magnet: true,
-              stroke: '#31d0c6',
-              r: 4,
-              strokeWidth: 2,
-              fill: '#fff'
-            }
-          }
-        }
-      },
-      items: [
-        { group: 'left' },
-        { group: 'right' }
-      ]
+  const nodeConfigs: Node.Metadata[] = nodes.map((node, index) => {
+    // 根据节点类型确定使用的自定义形状
+    let shape = 'process-node'
+    if (index === 0) {
+      shape = 'start-node'
+    } else if (index === nodes.length - 1) {
+      shape = 'end-node'
     }
-  }))
+
+    return {
+      id: node.id,
+      shape: shape,
+      x: startX + index * nodeSpacing,
+      y: startY,
+      data: {
+        label: node.label
+      }
+    }
+  })
 
   graph.addNodes(nodeConfigs)
 
