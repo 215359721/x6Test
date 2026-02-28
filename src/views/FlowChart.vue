@@ -1,10 +1,13 @@
 <template>
   <div class="flowchart-container">
     <el-container>
+      <!-- 头部标题区域 -->
       <el-header class="header">
         <h1>AntV X6 流程图 Demo</h1>
       </el-header>
+      <!-- 主体内容区域 -->
       <el-main class="main">
+        <!-- 工具栏：包含各种操作按钮 -->
         <div class="toolbar">
           <el-button type="primary" @click="layoutDiagram">自动布局</el-button>
           <el-button @click="centerContent">居中显示</el-button>
@@ -12,9 +15,11 @@
           <el-button @click="zoomOut">缩小</el-button>
           <el-button @click="exportData">导出数据</el-button>
         </div>
+        <!-- X6 画布容器 -->
         <div id="x6-container" ref="containerRef" class="x6-container"></div>
       </el-main>
     </el-container>
+    <!-- TeleportContainer: Vue 3 必需的容器，用于渲染自定义 Vue 节点 -->
     <TeleportContainer />
   </div>
 </template>
@@ -30,36 +35,39 @@ import StartNode from '@/components/nodes/StartNode.vue'
 import EndNode from '@/components/nodes/EndNode.vue'
 import OperationNode from '@/components/nodes/OperationNode.vue'
 
-// 获取 TeleportContainer 组件
+// 获取 TeleportContainer 组件（Vue 3 自定义节点必需）
 const TeleportContainer = getTeleport()
 
-// 注册自定义节点
+// ==================== 注册自定义节点 ====================
+
+// 注册开始节点
 register({
-  shape: 'start-node',
-  component: StartNode,
-  width: 120,
-  height: 50,
+  shape: 'start-node',              // 节点形状的唯一标识
+  component: StartNode,             // Vue 组件
+  width: 120,                       // 节点默认宽度
+  height: 50,                       // 节点默认高度
   ports: {
     groups: {
-      right: {
-        position: 'right',
+      right: {                      // 右侧连接点组
+        position: 'right',          // 位置：右侧
         attrs: {
-          circle: {
-            magnet: true,
-            stroke: '#31d0c6',
-            r: 4,
-            strokeWidth: 2,
-            fill: '#fff'
+          circle: {                 // 连接点样式：圆形
+            magnet: true,           // 可作为连接磁吸点
+            stroke: '#31d0c6',      // 边框颜色
+            r: 4,                   // 半径
+            strokeWidth: 2,         // 边框宽度
+            fill: '#fff'            // 填充颜色
           }
         }
       }
     },
-    items: [
+    items: [                         // 实际显示的连接点
       { group: 'right' }
     ]
   }
 })
 
+// 注册结束节点
 register({
   shape: 'end-node',
   component: EndNode,
@@ -67,7 +75,7 @@ register({
   height: 50,
   ports: {
     groups: {
-      left: {
+      left: {                       // 左侧连接点组
         position: 'left',
         attrs: {
           circle: {
@@ -86,6 +94,7 @@ register({
   }
 })
 
+// 注册工序节点（中间节点）
 register({
   shape: 'operation-node',
   component: OperationNode,
@@ -93,7 +102,7 @@ register({
   height: 50,
   ports: {
     groups: {
-      left: {
+      left: {                       // 左侧连接点
         position: 'left',
         attrs: {
           circle: {
@@ -105,7 +114,7 @@ register({
           }
         }
       },
-      right: {
+      right: {                      // 右侧连接点
         position: 'right',
         attrs: {
           circle: {
@@ -125,8 +134,10 @@ register({
   }
 })
 
-const containerRef = ref<HTMLDivElement>()
-let graph: Graph | null = null
+// ==================== 画布初始化 ====================
+
+const containerRef = ref<HTMLDivElement>()  // 画布容器的引用
+let graph: Graph | null = null             // X6 图实例
 
 // 节点数据定义
 const nodes = [
@@ -147,7 +158,10 @@ const edges = [
   { source: 'process-4', target: 'end' }
 ]
 
-// 初始化画布
+/**
+ * 初始化画布
+ * 创建 X6 Graph 实例并配置各种选项
+ */
 const initGraph = () => {
   if (!containerRef.value) return
 
@@ -159,48 +173,60 @@ const initGraph = () => {
     width: rect.width || 800,
     height: rect.height || 600,
     background: {
-      color: '#f5f7fa'
+      color: '#f5f7fa'             // 背景色
     },
-    autoResize: true,
+    autoResize: true,               // 自动调整大小
+
+    // 嵌入配置
     embedding: {
-      enabled: true
+      enabled: true                 // 启用嵌入功能
     },
+
+    // 网格配置（使用 X6 原生功能）
     grid: {
-      size: 10,
-      visible: true,
-      type: 'dot',
+      size: 10,                     // 网格大小
+      visible: true,                // 是否可见
+      type: 'dot',                  // 网格类型：点状
       args: {
-        color: '#d0d0d0',
-        thickness: 1
+        color: '#d0d0d0',           // 网格颜色
+        thickness: 1                // 线条粗细
       }
     },
+
+    // 平移配置
     panning: {
-      enabled: true,
-      modifiers: 'shift'
+      enabled: true,                // 启用平移
+      modifiers: 'shift'            // 按住 Shift 键平移
     },
+
+    // 鼠标滚轮缩放配置
     mousewheel: {
       enabled: true,
-      modifiers: ['ctrl', 'meta']
+      modifiers: ['ctrl', 'meta']   // 按 Ctrl/Cmd 键缩放
     },
+
+    // 连接配置
     connecting: {
-      snap: true,
-      allowBlank: false,
-      allowMulti: true,
-      allowLoop: false,
-      allowNode: true,
-      allowEdge: false,
+      snap: true,                   // 吸附对齐
+      allowBlank: false,            // 不允许连接到空白处
+      allowMulti: true,             // 允许多条边连接同一节点
+      allowLoop: false,             // 不允许自环
+      allowNode: true,              // 允许连接到节点
+      allowEdge: false,             // 不允许连接到边
       router: {
-        name: 'manhattan'
+        name: 'manhattan'           // 曼哈顿路由（正交线）
       },
       connector: {
-        name: 'rounded',
+        name: 'rounded',            // 圆角连接器
         args: {
-          radius: 8
+          radius: 8                 // 圆角半径
         }
       }
     },
+
+    // 高亮配置
     highlighting: {
-      magnetAvailable: {
+      magnetAvailable: {            // 可用连接点高亮
         name: 'stroke',
         args: {
           padding: 4,
@@ -210,7 +236,7 @@ const initGraph = () => {
           }
         }
       },
-      magnetAdsorbed: {
+      magnetAdsorbed: {             // 连接点磁吸高亮
         name: 'stroke',
         args: {
           attrs: {
@@ -223,59 +249,67 @@ const initGraph = () => {
   })
 }
 
-// 创建节点
+/**
+ * 创建节点和边
+ * 根据配置数据创建流程图的所有节点和连接线
+ */
 const createNodes = () => {
   if (!graph) return
 
   // 计算起始位置，使节点在画布中心附近
   const startX = 50
   const startY = 150
-  const nodeSpacing = 200
+  const nodeSpacing = 200           // 节点之间的水平间距
 
+  // 创建节点配置
   const nodeConfigs: Node.Metadata[] = nodes.map((node, index) => {
     // 根据节点类型确定使用的自定义形状
     let shape = 'operation-node'
     if (index === 0) {
-      shape = 'start-node'
+      shape = 'start-node'          // 第一个节点是开始节点
     } else if (index === nodes.length - 1) {
-      shape = 'end-node'
+      shape = 'end-node'             // 最后一个节点是结束节点
     }
 
     return {
       id: node.id,
-      shape: shape,
+      shape: shape,                  // 使用注册的自定义形状
       x: startX + index * nodeSpacing,
       y: startY,
       data: {
-        label: node.label
+        label: node.label           // 传递给 Vue 组件的数据
       }
     }
   })
 
+  // 批量添加节点到画布
   graph.addNodes(nodeConfigs)
 
-  // 创建边（连接）
+  // 创建边（连接线）
   edges.forEach((edge) => {
     graph?.addEdge({
       source: edge.source,
       target: edge.target,
       attrs: {
         line: {
-          stroke: '#a2b1c3',
-          strokeWidth: 2,
-          targetMarker: {
-            name: 'block',
+          stroke: '#a2b1c3',         // 线条颜色
+          strokeWidth: 2,            // 线条宽度
+          targetMarker: {            // 箭头标记
+            name: 'block',           // 实心箭头
             width: 12,
             height: 8
           }
         }
       },
-      zIndex: 0
+      zIndex: 0                      // 层级，确保边在节点下方
     })
   })
 }
 
-// 自动布局
+/**
+ * 自动布局
+ * 使用 Dagre 算法自动排列节点位置
+ */
 const layoutDiagram = () => {
   if (!graph) return
 
@@ -288,15 +322,16 @@ const layoutDiagram = () => {
   const nodes_list = graph.getNodes()
   const nodeCount = nodes_list.length
 
-  // 计算节点尺寸（假设所有节点尺寸相同）
+  // 计算节点尺寸
   const nodeSize = nodes_list[0]?.getSize() || { width: 120, height: 50 }
   const nodeWidth = nodeSize.width
   const nodeHeight = nodeSize.height
 
   // 动态计算间距，确保节点能适应画布宽度
-  const padding = 60 // 左右各留60px边距
+  const padding = 60                 // 左右各留60px边距
   const availableWidth = canvasWidth - padding * 2
   const totalNodesWidth = nodeWidth * nodeCount
+  // 间距限制在 30-50px 之间
   const nodesep = Math.max(30, Math.min(50, Math.floor((availableWidth - totalNodesWidth) / (nodeCount - 1))))
 
   // 准备布局数据
@@ -313,13 +348,13 @@ const layoutDiagram = () => {
     target: edge.getTargetCellId()
   }))
 
-  // 创建 Dagre 布局
+  // 创建 Dagre 布局实例
   const dagreLayout = new DagreLayout({
     type: 'dagre',
-    rankdir: 'LR',
-    nodesep: nodesep,
-    ranksep: 30,
-    controlPoints: true
+    rankdir: 'LR',                  // 左右布局
+    nodesep: nodesep,               // 节点间距
+    ranksep: 30,                    // 层级间距
+    controlPoints: true             // 使用控制点
   })
 
   // 执行布局
@@ -341,26 +376,34 @@ const layoutDiagram = () => {
   graph.centerContent({ padding: 20 })
 }
 
-// 居中显示
+/**
+ * 居中显示内容
+ */
 const centerContent = () => {
   graph?.centerContent()
 }
 
-// 放大
+/**
+ * 放大
+ */
 const zoomIn = () => {
   if (graph) {
     graph.zoom(0.1)
   }
 }
 
-// 缩小
+/**
+ * 缩小
+ */
 const zoomOut = () => {
   if (graph) {
     graph.zoom(-0.1)
   }
 }
 
-// 导出数据
+/**
+ * 导出数据到控制台
+ */
 const exportData = () => {
   if (!graph) return
   const data = graph.toJSON()
@@ -368,30 +411,34 @@ const exportData = () => {
   ElMessage.success('数据已导出到控制台')
 }
 
-// 窗口大小变化时重新调整画布
+/**
+ * 窗口大小变化时重新调整画布
+ */
 const handleResize = () => {
   if (!graph || !containerRef.value) return
   const rect = containerRef.value.getBoundingClientRect()
   graph.resize(rect.width, rect.height)
 }
 
+// ==================== 生命周期钩子 ====================
+
 onMounted(() => {
-  initGraph()
+  initGraph()                       // 初始化画布
   // 确保容器有尺寸后再创建节点
   setTimeout(() => {
-    createNodes()
+    createNodes()                   // 创建节点和边
     // 初始居中显示
     setTimeout(() => {
       graph?.centerContent()
     }, 50)
   }, 100)
 
-  window.addEventListener('resize', handleResize)
+  window.addEventListener('resize', handleResize)  // 监听窗口大小变化
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
-  graph?.dispose()
+  graph?.dispose()                  // 销毁图实例，释放资源
 })
 </script>
 
