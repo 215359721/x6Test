@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create vite@latest . -- --template vue-ts)",
+      "Bash(npm install)",
+      "Bash(npm run dev)",
+      "Bash(npm install @antv/layout@0.3.24 @antv/x6@2.16.1 @antv/x6-vue-shape@2.1.1)"
+    ]
+  }
+}
