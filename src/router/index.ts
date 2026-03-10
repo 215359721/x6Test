@@ -15,6 +15,11 @@ const routes: RouteRecordRaw[] = [
     path: '/flowchart',
     name: 'FlowChart',
     component: () => import('@/views/FlowChart.vue')
+  },
+  {
+    path: '/tree-table',
+    name: 'TreeTable',
+    component: () => import('@/views/TreeTableDemo.vue')
   }
 ]
 
