@@ -23,7 +23,7 @@
       :class="{ 'dt-zone--dragover': isOver('left') }"
       @dragenter="onDragEnter('left')"
       @dragleave="onDragLeave('left')"
-      @dragover.prevent
+      @dragover="onZoneDragover"
       @drop.prevent="onDrop('left')"
     >
       <!-- 分组标题栏 -->
@@ -52,12 +52,15 @@
             <span
               class="dt-tab-label"
               :class="{
-                'dt-tab-label--dragging': dragging?.tab.name === tab.name,
-                'dt-tab-label--locked':   !props.allowDrag,
+                'dt-tab-label--dragging':    dragging?.tab.name === tab.name,
+                'dt-tab-label--locked':      !props.allowDrag,
+                'dt-tab-label--drop-before': isDropTarget(tab.name, 'left', 'before'),
+                'dt-tab-label--drop-after':  isDropTarget(tab.name, 'left', 'after'),
               }"
               :draggable="props.allowDrag"
               @dragstart="onDragStart($event, tab, 'left')"
               @dragend="onDragEnd"
+              @dragover.prevent="onTabDragover($event, tab, 'left')"
             >
               <!-- 拖拽把手图标（6 个点 2×3 排列） -->
               <svg class="dt-handle" viewBox="0 0 10 16" fill="currentColor">
@@ -107,7 +110,7 @@
       :class="{ 'dt-zone--dragover': isOver('right') }"
       @dragenter="onDragEnter('right')"
       @dragleave="onDragLeave('right')"
-      @dragover.prevent
+      @dragover="onZoneDragover"
       @drop.prevent="onDrop('right')"
     >
       <div class="dt-zone-header">
@@ -127,12 +130,15 @@
             <span
               class="dt-tab-label"
               :class="{
-                'dt-tab-label--dragging': dragging?.tab.name === tab.name,
-                'dt-tab-label--locked':   !props.allowDrag,
+                'dt-tab-label--dragging':    dragging?.tab.name === tab.name,
+                'dt-tab-label--locked':      !props.allowDrag,
+                'dt-tab-label--drop-before': isDropTarget(tab.name, 'right', 'before'),
+                'dt-tab-label--drop-after':  isDropTarget(tab.name, 'right', 'after'),
               }"
               :draggable="props.allowDrag"
               @dragstart="onDragStart($event, tab, 'right')"
               @dragend="onDragEnd"
+              @dragover.prevent="onTabDragover($event, tab, 'right')"
             >
               <svg class="dt-handle" viewBox="0 0 10 16" fill="currentColor">
                 <circle cx="2"  cy="2"  r="1.5"/>
@@ -163,6 +169,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 
 // ── 导出 TabItem 供父组件构造初始数据 ──
 export interface TabItem {
@@ -199,12 +206,19 @@ const leftActive  = ref(props.initialLeftTabs[0]?.name  ?? '')
 const rightActive = ref(props.initialRightTabs[0]?.name ?? '')
 
 // ── 当前拖拽状态 ──
-const dragging = ref<{ tab: TabItem; from: Side } | null>(null)
+const dragging   = ref<{ tab: TabItem; from: Side } | null>(null)
 
-// allowDrag 切换为 false 时，中止正在进行的拖拽并清空状态
+/**
+ * dropTarget - 插入位置目标
+ * 记录拖拽悬停在哪个 tab 的 before/after，用于精确定位插入点
+ */
+const dropTarget = ref<{ side: Side; name: string; position: 'before' | 'after' } | null>(null)
+
+// allowDrag 切换为 false 时，中止正在进行的拖拽并清空所有状态
 watch(() => props.allowDrag, (enabled) => {
   if (!enabled) {
     dragging.value    = null
+    dropTarget.value  = null
     enterCounts.left  = 0
     enterCounts.right = 0
   }
@@ -245,7 +259,8 @@ function onDragStart(e: DragEvent, tab: TabItem, from: Side) {
 
 /** dragend：拖拽结束（无论是否 drop 成功），重置所有状态 */
 function onDragEnd() {
-  dragging.value = null
+  dragging.value    = null
+  dropTarget.value  = null
   enterCounts.left  = 0
   enterCounts.right = 0
 }
@@ -259,52 +274,113 @@ function onDragLeave(side: Side) {
 }
 
 /**
- * drop：将 tab 从来源侧移入目标侧
+ * isDropTarget - 判断某 tab 是否为当前插入指示位置
+ * 排除被拖拽的 tab 本身（不在自身处显示指示线）
+ */
+function isDropTarget(name: string, side: Side, position: 'before' | 'after'): boolean {
+  return dropTarget.value?.name     === name
+      && dropTarget.value?.side     === side
+      && dropTarget.value?.position === position
+      && dragging.value?.tab.name   !== name
+}
+
+/**
+ * onTabDragover - tab 标签 dragover
+ * 根据鼠标在 tab 标签的左半/右半，设置 dropTarget.position 为 before/after
+ * 挂在每个 label span 上，以获取精确的元素位置
+ */
+function onTabDragover(e: DragEvent, tab: TabItem, side: Side) {
+  if (!dragging.value || !props.allowDrag) return
+  const rect     = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const position = e.clientX < rect.left + rect.width / 2 ? 'before' : 'after'
+  dropTarget.value = { side, name: tab.name, position }
+}
+
+/**
+ * onZoneDragover - zone 容器 dragover
+ * 调用 e.preventDefault() 允许 drop；
+ * 当指针悬停在 zone 空白区域（非 tab 标签子元素）时清除 dropTarget，
+ * 此时 drop 将追加到列表末尾（兜底行为）
+ */
+function onZoneDragover(e: DragEvent) {
+  e.preventDefault()
+  if (e.target === e.currentTarget) {
+    dropTarget.value = null
+  }
+}
+
+/**
+ * onDrop - 处理 tab 的移动或排序
  *
- * 保护规则：来源侧只剩 1 个 tab 时拒绝移出（防止空组）
+ * 场景①：同分组排序（from === to）
+ *   - 必须有明确的 dropTarget，否则视为无效操作
+ *   - 按 dropTarget.position 确定插入位置，位置不变时跳过
+ *
+ * 场景②：跨分组移动（from !== to）
+ *   - 来源侧只剩 1 个 tab 时拒绝移出（防止空组）
+ *   - 有 dropTarget 则按位置插入；无 dropTarget 则追加末尾
  */
 function onDrop(to: Side) {
-  // 重置计数器（drop 后 dragleave 可能不再触发）
   enterCounts.left  = 0
   enterCounts.right = 0
 
-  if (!dragging.value) return
+  const done = () => { dragging.value = null; dropTarget.value = null }
+
+  if (!dragging.value) { done(); return }
 
   const { tab, from } = dragging.value
-
-  // 同侧拖拽不处理
-  if (from === to) {
-    dragging.value = null
-    return
-  }
-
   const srcList = getList(from)
   const dstList = getList(to)
 
-  // 来源侧只剩 1 个，保护不允许移出
-  if (srcList.value.length <= 1) {
-    dragging.value = null
+  // ── 场景①：同分组排序 ──
+  if (from === to) {
+    if (!dropTarget.value || dropTarget.value.side !== to) { done(); return }
+
+    const srcIdx    = srcList.value.findIndex(t => t.name === tab.name)
+    const targetIdx = dstList.value.findIndex(t => t.name === dropTarget.value!.name)
+    if (srcIdx === -1 || targetIdx === -1) { done(); return }
+
+    // 计算插入下标（after 则插入目标之后）
+    let insertIdx = dropTarget.value.position === 'before' ? targetIdx : targetIdx + 1
+    // 移除自身后下标需后移修正
+    if (insertIdx > srcIdx) insertIdx--
+    // 位置无变化则跳过
+    if (insertIdx === srcIdx) { done(); return }
+
+    srcList.value.splice(srcIdx, 1)
+    srcList.value.splice(insertIdx, 0, tab)
+    done()
     return
   }
 
-  // 从来源列表中移除
-  const idx = srcList.value.findIndex(t => t.name === tab.name)
-  if (idx === -1) { dragging.value = null; return }
-  srcList.value.splice(idx, 1)
-
-  // 追加到目标列表末尾
-  dstList.value.push(tab)
-
-  // 来源侧：若被移走的是当前激活 tab，切换到相邻 tab
-  const srcActive = getActive(from)
-  if (srcActive.value === tab.name) {
-    srcActive.value = srcList.value[Math.min(idx, srcList.value.length - 1)]?.name ?? ''
+  // ── 场景②：跨分组移动 ──
+  if (srcList.value.length <= 1) {
+    ElMessage.warning('每侧至少保留 1 个标签，无法继续移出')
+    done(); return
   }
 
-  // 目标侧：自动切换到新移入的 tab
+  const srcIdx = srcList.value.findIndex(t => t.name === tab.name)
+  if (srcIdx === -1) { done(); return }
+  srcList.value.splice(srcIdx, 1)
+
+  // 按 dropTarget 插入，无 dropTarget 则追加末尾
+  if (dropTarget.value && dropTarget.value.side === to) {
+    const targetIdx = dstList.value.findIndex(t => t.name === dropTarget.value!.name)
+    const insertIdx = dropTarget.value.position === 'before' ? targetIdx : targetIdx + 1
+    dstList.value.splice(insertIdx, 0, tab)
+  } else {
+    dstList.value.push(tab)
+  }
+
+  // 来源侧：被移走的是 active tab 时切换到相邻 tab
+  const srcActive = getActive(from)
+  if (srcActive.value === tab.name) {
+    srcActive.value = srcList.value[Math.min(srcIdx, srcList.value.length - 1)]?.name ?? ''
+  }
+  // 目标侧：自动激活新移入的 tab
   getActive(to).value = tab.name
 
-  dragging.value = null
+  done()
 }
 </script>
 
@@ -409,12 +485,13 @@ function onDrop(to: Side) {
 
 /* ── 可拖拽的 tab 标签头 ── */
 .dt-tab-label {
+  position: relative;  /* 供插入指示线伪元素定位 */
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: grab;
   user-select: none;
-  padding: 2px 0;
+  padding: 2px 3px;  /* 左右留 3px 给指示线 */
 
   &:active { cursor: grabbing; }
 
@@ -426,6 +503,30 @@ function onDrop(to: Side) {
     cursor: default;
     &:active { cursor: default; }
     .dt-handle { display: none; }
+  }
+
+  /* 插入位置指示线 - 左侧（before） */
+  &--drop-before::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 1px;
+    bottom: 1px;
+    width: 2px;
+    background: #3b82f6;
+    border-radius: 1px;
+  }
+
+  /* 插入位置指示线 - 右侧（after） */
+  &--drop-after::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 1px;
+    bottom: 1px;
+    width: 2px;
+    background: #3b82f6;
+    border-radius: 1px;
   }
 }
 
