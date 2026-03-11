@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 
 // ── 节点数据结构（导出供父组件复用）──
@@ -140,6 +140,12 @@ interface Props {
   showCheckbox?: boolean
   /** 初始根节点数组 */
   rootData: TreeNode[]
+  /**
+   * 行高（像素），对应 vxe-table rowConfig.height
+   * 不传则使用 vxe 默认行高（约 48px）
+   * 常用参考值：32 紧凑 / 40 默认 / 52 宽松
+   */
+  rowHeight?: number
   /** 懒加载子节点回调，展开节点时调用 */
   loadChildren: (row: TreeNode) => Promise<TreeNode[]>
 }
@@ -177,16 +183,18 @@ watch(
 // ── vxe-table 配置 ──
 
 /**
- * rowConfig - 行配置
+ * rowConfig - 行配置（computed，随 rowHeight prop 响应更新）
  *   keyField   - 唯一标识字段，懒加载时防止重复请求子节点
  *   isCurrent  - true：启用"当前行"机制，单击行自动高亮并触发 current-change 事件
  *   isHover    - true：鼠标悬停时高亮当前行
+ *   height     - 行高（像素），由 rowHeight prop 注入；未传时不设置，使用 vxe 默认值
  */
-const rowConfig: VxeTablePropTypes.RowConfig = {
+const rowConfig = computed<VxeTablePropTypes.RowConfig>(() => ({
   keyField: 'id',
   isCurrent: true,
   isHover: true,
-}
+  ...(props.rowHeight !== undefined ? { height: props.rowHeight } : {}),
+}))
 
 /**
  * checkboxConfig - checkbox 行为配置

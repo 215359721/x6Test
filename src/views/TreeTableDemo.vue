@@ -19,7 +19,8 @@
         </el-button>
         <div class="divider-v"></div>
         <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V6a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 20.25 6v12.75m-18.375.625a1.125 1.125 0 0 0 1.125 1.125h15.75a1.125 1.125 0 0 0 1.125-1.125v-.375A1.125 1.125 0 0 0 20.25 18h-15a1.125 1.125 0 0 0-1.125 1.125v.375z" />
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V6a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 20.25 6v12.75m-18.375.625a1.125 1.125 0 0 0 1.125 1.125h15.75a1.125 1.125 0 0 0 1.125-1.125v-.375A1.125 1.125 0 0 0 20.25 18h-15a1.125 1.125 0 0 0-1.125 1.125v.375z" />
         </svg>
         <span class="header-title">vxe-table 树形表格</span>
         <span class="header-sub">多根节点 · 懒加载 · 部件 + 工艺 BOP</span>
@@ -37,22 +38,13 @@
 
         <!-- ── 左：部件树（3层：folder → module → item） ── -->
         <div class="table-card">
-          <TreeTable
-            title="部件"
-            :show-checkbox="true"
-            :root-data="partsRootData"
-            :load-children="loadPartsChildren"
-          />
+          <TreeTable title="部件" :show-checkbox="true" :root-data="partsRootData" :load-children="loadPartsChildren" />
         </div>
 
         <!-- ── 右：工艺 BOP 树（5层：总工艺→专业工艺→工序→工步→活动） ── -->
         <div class="table-card table-card--bop">
-          <TreeTable
-            title="工艺 BOP"
-            :show-checkbox="true"
-            :root-data="bopRootData"
-            :load-children="loadBopChildren"
-          />
+          <TreeTable title="工艺 BOP" :show-checkbox="true" :row-height="35" :root-data="bopRootData"
+            :load-children="loadBopChildren" />
         </div>
 
       </div>
@@ -77,9 +69,9 @@ const goHome = () => router.push('/')
 // ════════════════════════════════════════════════════════
 
 const partsRootData = ref<TreeNode[]>([
-  { id: 1, name: '流程模板库',   code: 'TPL-001', version: 'V1.0', iconType: 'folder', hasChild: true },
+  { id: 1, name: '流程模板库', code: 'TPL-001', version: 'V1.0', iconType: 'folder', hasChild: true },
   { id: 2, name: '设备管理流程', code: 'EQP-002', version: 'V2.1', iconType: 'folder', hasChild: true },
-  { id: 3, name: '质检标准流程', code: 'QC-003',  version: 'V1.5', iconType: 'folder', hasChild: true },
+  { id: 3, name: '质检标准流程', code: 'QC-003', version: 'V1.5', iconType: 'folder', hasChild: true },
 ])
 
 const partsChildrenMap: Record<number | string, TreeNode[]> = {
@@ -101,23 +93,23 @@ const partsChildrenMap: Record<number | string, TreeNode[]> = {
   ],
   11: [
     { id: 111, name: '供应商送货单', code: 'TPL-001-01-A', version: 'V1.0', iconType: 'item', hasChild: false },
-    { id: 112, name: '入库验收单',   code: 'TPL-001-01-B', version: 'V1.0', iconType: 'item', hasChild: false },
+    { id: 112, name: '入库验收单', code: 'TPL-001-01-B', version: 'V1.0', iconType: 'item', hasChild: false },
   ],
   12: [
     { id: 121, name: '出库申请单', code: 'TPL-001-02-A', version: 'V1.0', iconType: 'item', hasChild: false },
     { id: 122, name: '出库确认单', code: 'TPL-001-02-B', version: 'V1.1', iconType: 'item', hasChild: false },
   ],
   21: [
-    { id: 211, name: '采购申请',   code: 'EQP-002-01-A', version: 'V2.0', iconType: 'item', hasChild: false },
+    { id: 211, name: '采购申请', code: 'EQP-002-01-A', version: 'V2.0', iconType: 'item', hasChild: false },
     { id: 212, name: '供应商评审', code: 'EQP-002-01-B', version: 'V1.0', iconType: 'item', hasChild: false },
-    { id: 213, name: '采购合同',   code: 'EQP-002-01-C', version: 'V2.0', iconType: 'item', hasChild: false },
+    { id: 213, name: '采购合同', code: 'EQP-002-01-C', version: 'V2.0', iconType: 'item', hasChild: false },
   ],
   22: [
     { id: 221, name: '定期保养计划', code: 'EQP-002-02-A', version: 'V2.1', iconType: 'item', hasChild: false },
     { id: 222, name: '故障维修记录', code: 'EQP-002-02-B', version: 'V1.5', iconType: 'item', hasChild: false },
   ],
   31: [
-    { id: 311, name: 'AQL 抽样方案',  code: 'QC-003-01-A', version: 'V1.5', iconType: 'item', hasChild: false },
+    { id: 311, name: 'AQL 抽样方案', code: 'QC-003-01-A', version: 'V1.5', iconType: 'item', hasChild: false },
     { id: 312, name: '来料不合格处理', code: 'QC-003-01-B', version: 'V1.3', iconType: 'item', hasChild: false },
   ],
 }
@@ -141,9 +133,9 @@ const loadPartsChildren = (row: TreeNode): Promise<TreeNode[]> =>
 
 /** 第1层：总工艺根节点（3个） */
 const bopRootData = ref<TreeNode[]>([
-  { id: 'b1', name: '机身总装工艺',   code: 'BOP-001', version: 'V1.0', iconType: 'folder', hasChild: true },
+  { id: 'b1', name: '机身总装工艺', code: 'BOP-001', version: 'V1.0', iconType: 'folder', hasChild: true },
   { id: 'b2', name: '发动机装配工艺', code: 'BOP-002', version: 'V2.0', iconType: 'folder', hasChild: true },
-  { id: 'b3', name: '电气系统工艺',   code: 'BOP-003', version: 'V1.5', iconType: 'folder', hasChild: true },
+  { id: 'b3', name: '电气系统工艺', code: 'BOP-003', version: 'V1.5', iconType: 'folder', hasChild: true },
 ])
 
 /**
@@ -181,7 +173,7 @@ const bopChildrenMap: Record<string, TreeNode[]> = {
     { id: 'b22', name: '调试校准工艺', code: 'BOP-002-02', version: 'V1.5', iconType: 'module', hasChild: true },
   ],
   b3: [
-    { id: 'b31', name: '线路铺设工艺',  code: 'BOP-003-01', version: 'V1.5', iconType: 'module', hasChild: true },
+    { id: 'b31', name: '线路铺设工艺', code: 'BOP-003-01', version: 'V1.5', iconType: 'module', hasChild: true },
     { id: 'b32', name: '接线端连接工艺', code: 'BOP-003-02', version: 'V1.2', iconType: 'module', hasChild: true },
   ],
 
@@ -222,7 +214,7 @@ const bopChildrenMap: Record<string, TreeNode[]> = {
   ],
   b211: [
     { id: 'b2111', name: '超声波清洗工步', code: 'BOP-002-01-01-S1', version: 'V2.0', iconType: 'step', hasChild: true },
-    { id: 'b2112', name: '烘干处理工步',   code: 'BOP-002-01-01-S2', version: 'V2.0', iconType: 'step', hasChild: false },
+    { id: 'b2112', name: '烘干处理工步', code: 'BOP-002-01-01-S2', version: 'V2.0', iconType: 'step', hasChild: false },
   ],
   b221: [
     { id: 'b2211', name: '转速校准工步', code: 'BOP-002-02-01-S1', version: 'V1.5', iconType: 'step', hasChild: true },
@@ -242,7 +234,7 @@ const bopChildrenMap: Record<string, TreeNode[]> = {
   ],
   b1112: [
     { id: 'b11121', name: '选择夹具型号', code: 'BOP-001-01-01-S2-A1', version: 'V1.0', iconType: 'item', hasChild: false },
-    { id: 'b11122', name: '施加夹紧力',   code: 'BOP-001-01-01-S2-A2', version: 'V1.0', iconType: 'item', hasChild: false },
+    { id: 'b11122', name: '施加夹紧力', code: 'BOP-001-01-01-S2-A2', version: 'V1.0', iconType: 'item', hasChild: false },
   ],
   b1121: [
     { id: 'b11211', name: '钻头型号确认', code: 'BOP-001-01-02-S1-A1', version: 'V1.0', iconType: 'item', hasChild: false },
@@ -253,7 +245,7 @@ const bopChildrenMap: Record<string, TreeNode[]> = {
     { id: 'b12112', name: '均匀喷砂施工', code: 'BOP-001-02-01-S1-A2', version: 'V1.1', iconType: 'item', hasChild: false },
   ],
   b2111: [
-    { id: 'b21111', name: '配制清洗液',   code: 'BOP-002-01-01-S1-A1', version: 'V2.0', iconType: 'item', hasChild: false },
+    { id: 'b21111', name: '配制清洗液', code: 'BOP-002-01-01-S1-A1', version: 'V2.0', iconType: 'item', hasChild: false },
     { id: 'b21112', name: '超声波机启动', code: 'BOP-002-01-01-S1-A2', version: 'V2.0', iconType: 'item', hasChild: false },
   ],
   b2211: [
@@ -261,12 +253,12 @@ const bopChildrenMap: Record<string, TreeNode[]> = {
     { id: 'b22112', name: '记录校准数据', code: 'BOP-002-02-01-S1-A2', version: 'V1.5', iconType: 'item', hasChild: false },
   ],
   b3111: [
-    { id: 'b31111', name: '线槽选型',   code: 'BOP-003-01-01-S1-A1', version: 'V1.5', iconType: 'item', hasChild: false },
+    { id: 'b31111', name: '线槽选型', code: 'BOP-003-01-01-S1-A1', version: 'V1.5', iconType: 'item', hasChild: false },
     { id: 'b31112', name: '线槽螺栓紧固', code: 'BOP-003-01-01-S1-A2', version: 'V1.5', iconType: 'item', hasChild: false },
   ],
   b3211: [
     { id: 'b32111', name: '剥线长度测量', code: 'BOP-003-02-01-S1-A1', version: 'V1.2', iconType: 'item', hasChild: false },
-    { id: 'b32112', name: '绝缘层剥除',   code: 'BOP-003-02-01-S1-A2', version: 'V1.2', iconType: 'item', hasChild: false },
+    { id: 'b32112', name: '绝缘层剥除', code: 'BOP-003-02-01-S1-A2', version: 'V1.2', iconType: 'item', hasChild: false },
   ],
 }
 
@@ -305,12 +297,40 @@ const loadBopChildren = (row: TreeNode): Promise<TreeNode[]> =>
   gap: 12px;
 }
 
-.back-btn   { font-size: 13px; color: #606266; }
-.divider-v  { width: 1px; height: 20px; background: #dcdfe6; }
-.header-icon { width: 22px; height: 22px; color: #3b82f6; }
-.header-title { font-size: 16px; font-weight: 600; color: #1f2937; }
-.header-sub   { font-size: 12px; color: #9ca3af; margin-left: 4px; }
-.header-right { display: flex; align-items: center; gap: 8px; }
+.back-btn {
+  font-size: 13px;
+  color: #606266;
+}
+
+.divider-v {
+  width: 1px;
+  height: 20px;
+  background: #dcdfe6;
+}
+
+.header-icon {
+  width: 22px;
+  height: 22px;
+  color: #3b82f6;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.header-sub {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-left: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 /* ════════════════════════════════════════
    主体区：水平滚动容器 + 两表并排
@@ -318,10 +338,12 @@ const loadBopChildren = (row: TreeNode): Promise<TreeNode[]> =>
 .demo-body {
   flex: 1;
   display: flex;
-  justify-content: center;   /* 整体居中 */
+  justify-content: center;
+  /* 整体居中 */
   align-items: flex-start;
   padding: 24px 20px;
-  overflow: auto;             /* 内容超出时允许滚动 */
+  overflow: auto;
+  /* 内容超出时允许滚动 */
 }
 
 /* 两表横向排列的行容器 */
@@ -339,7 +361,8 @@ const loadBopChildren = (row: TreeNode): Promise<TreeNode[]> =>
 .table-card {
   flex-shrink: 0;
   width: 440px;
-  height: calc(100vh - 56px - 48px);   /* 减去 header + 上下 padding */
+  height: calc(100vh - 56px - 48px);
+  /* 减去 header + 上下 padding */
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
