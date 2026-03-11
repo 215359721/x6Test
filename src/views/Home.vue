@@ -68,6 +68,30 @@
             </svg>
           </div>
         </div>
+
+        <!-- El-Tabs 拖拽 Card -->
+        <div class="demo-card" @click="goToDraggableTabs">
+          <div class="card-icon card-icon--amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 3M21 7.5H7.5" />
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">El-Tabs 拖拽</h3>
+            <p class="card-desc">跨分组拖拽 Tab 标签，实现标签的动态分配与工作台自定义布局</p>
+            <div class="card-tags">
+              <span class="tag">跨组拖拽</span>
+              <span class="tag">动态布局</span>
+              <span class="tag">标签重组</span>
+            </div>
+          </div>
+          <div class="card-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <!-- 底部信息 -->
@@ -83,8 +107,9 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const goToFlowchart = () => router.push('/flowchart')
-const goToTreeTable = () => router.push('/tree-table')
+const goToFlowchart     = () => router.push('/flowchart')
+const goToTreeTable     = () => router.push('/tree-table')
+const goToDraggableTabs = () => router.push('/draggable-tabs')
 </script>
 
 <style lang="scss" scoped>
@@ -157,7 +182,7 @@ const goToTreeTable = () => router.push('/tree-table')
   gap: 24px;
   padding: 32px 16px;
   width: 100%;
-  max-width: 760px;
+  max-width: 980px;
 }
 
 // Hero 区域
@@ -210,7 +235,7 @@ const goToTreeTable = () => router.push('/tree-table')
 // 演示卡片网格
 .demo-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   width: 100%;
   animation: fadeInUp 0.8s ease-out 0.15s both;
@@ -285,6 +310,11 @@ const goToTreeTable = () => router.push('/tree-table')
     background: rgba(16, 185, 129, 0.3);
     svg { color: #a7f3d0; }
   }
+
+  &--amber {
+    background: rgba(245, 158, 11, 0.3);
+    svg { color: #fde68a; }
+  }
 }
 
 // 卡片内容
@@ -355,7 +385,7 @@ const goToTreeTable = () => router.push('/tree-table')
 }
 
 // 响应式
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .demo-grid {
     grid-template-columns: 1fr;
   }

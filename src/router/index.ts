@@ -20,6 +20,11 @@ const routes: RouteRecordRaw[] = [
     path: '/tree-table',
     name: 'TreeTable',
     component: () => import('@/views/TreeTableDemo.vue')
+  },
+  {
+    path: '/draggable-tabs',
+    name: 'DraggableTabs',
+    component: () => import('@/views/DraggableTabsDemo.vue')
   }
 ]
 
