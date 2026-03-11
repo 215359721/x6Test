@@ -39,6 +39,7 @@
         <div class="table-card">
           <TreeTable
             title="部件"
+            :show-checkbox="true"
             :root-data="partsRootData"
             :load-children="loadPartsChildren"
           />
@@ -48,6 +49,7 @@
         <div class="table-card table-card--bop">
           <TreeTable
             title="工艺 BOP"
+            :show-checkbox="true"
             :root-data="bopRootData"
             :load-children="loadBopChildren"
           />
